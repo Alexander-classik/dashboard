@@ -1,0 +1,111 @@
+/* Общий стиль страницы */
+body {
+    background-color:#1f2937; /* темный фон */
+    color:#f9fafb; /* светлый текст */
+    font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+/* Контейнер блоков в стиле "дашборда" */
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* например, три колонки */
+  gap:20px;
+}
+
+/* Блоки секций */
+.collapsible-section {
+  position: relative;
+  background-color: #2d3748; /* ваш фон */
+  border-radius: 8px;
+  padding: 16px;
+  overflow: hidden; /* чтобы псевдоэлемент не выходил за границы */
+}
+
+/* Псевдоэлемент для перелива */
+.collapsible-section::before {
+  content: "";
+  position: absolute;
+  top: -4px; 
+  left: -4px; 
+  right: -4px; 
+  bottom: -4px; /* чуть больше, чтобы покрывать границу */
+  
+  border-radius: 8px; /* совпадает с блоком */
+  
+  .icon-list {
+            list-style: none; /* Убираем стандартные маркеры */
+            padding: 0;
+        }
+        .icon-list li {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .icon-list li img {
+            width: 24px; /* Размер иконки, можно изменить */
+            height: 24px;
+            margin-right: 10px; /* Отступ между иконкой и текстом */
+        }
+  
+  background: linear-gradient(
+    270deg,
+    #0000ff,   /* синий */
+    #8a2be2,   /* фиолетовый (фиолетово-синий) */
+    #0000ff    /* возвращение к синему для плавного цикла */
+  );
+  
+  background-size: 1400% 1400%; /* масштаб для анимации */
+  
+  z-index: -1; /* чтобы не мешал содержимому */
+  
+  /* Анимация перемещения градиента */
+  animation: blueVioletShift 3s linear infinite;
+}
+
+/* Анимация для перелива */
+@keyframes blueVioletShift {
+  from {
+    background-position: 0% center;
+  }
+  to {
+    background-position: -100% center;
+  }
+}
+
+/* Стиль для скрытия содержимого секции при классе collapsed */
+.collapsible-section.collapsed .section-content {
+  display: none;
+}
+
+/* Заголовки секций */
+.section-header {
+    font-size:1.25em;
+    font-weight:bold;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center; 
+}
+
+/* Часы и IP */
+#clock,
+#ip-address {
+    font-size:.95em; 
+}
+
+/* Кнопки */
+button {
+    background-color:#4a5568; 
+    color:#f9fafb; 
+    border:none; 
+    padding:10px 15px; 
+    border-radius:5px; 
+    cursor:pointer; 
+    transition:.2s all ease-in-out; 
+}
+
+button:hover {
+   background-color:#718096; 
+}

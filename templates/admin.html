@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Админка блоков</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+
+<h1>Административная панель управления блоками</h1>
+
+<!-- Форма добавления нового блока -->
+<h2>Добавить новый блок (для типа)</h2>
+<select id="new-block-type">
+  <option value="">Выберите тип блока</option>
+  <option value="links">Ссылки (с иконками)</option>
+  <option value="transitions">Переходы</option>
+</select>
+
+<form id="add-block-form" style="margin-top:10px; display:none;">
+  <input type='text' id='new-name' placeholder='Название' required />
+  <input type='text' id='new-url' placeholder='Ссылка' required />
+  <input type='text' id='new-icon' placeholder='Иконка (опц.)' />
+  <button type='submit'>Добавить блок</button>
+</form>
+
+<hr/>
+
+<!-- Список существующих блоков -->
+<h2>Текущие блоки:</h2>
+
+<div id='blocks-container'>
+<!-- Здесь будут загружаться текущие блоки через JS -->
+</div>
+
+<script>
+// Загрузка текущих блоков при загрузке страницы
+const loadBlocks = () => {
+  ['links','transitions'].forEach(type => {
+    fetch(`/api/blocks/${type}`)
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById(`${type}-list`);
+        container.innerHTML='';
+        data.forEach(b => {
+          const div=document.createElement('div');
+          div.innerHTML=`
+            <strong>${b.name}</strong> 
+            <a href="${b.url}" target="_blank">${b.url}</a> 
+            ${b.icon ? `<img src="/static/icons/${b.icon}" style="width:20px;height:20px;">` : ''}
+            <button onclick='editBlock(${b.id})'>Редактировать</button> 
+            <button onclick='deleteBlock(${b.id})'>Удалить</button>`;
+          container.appendChild(div);
+        });
+      });
+  });
+};
+
+document.getElementById('new-block-type').addEventListener('change', () => {
+  document.getElementById('add-block-form').style.display='block';
+});
+
+document.getElementById('add-block-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const type=document.getElementById('new-block-type').value;
+  const name=document.getElementById('new-name').value;
+  const url=document.getElementById('new-url').value;
+  const icon=document.getElementById('new-icon').value;
+
+  fetch(`/api/blocks/${type}/add`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name,url,icon})
+  }).then(res=>res.json()).then(data=>{
+      alert('Блок добавлен');
+      loadBlocks();
+      document.getElementById('add-block-form').reset();
+  });
+});
+
+// Функции редактирования и удаления (пример)
+const editBlock=(id)=>{
+  const newName=prompt("Новое название:");
+  const newUrl=prompt("Новая ссылка:");
+  const newIcon=prompt("Новая иконка (оставьте пустым чтобы не менять):");
+  fetch(`/api/blocks/${id}/edit`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name:newName,url:newUrl,icon:newIcon})
+  }).then(res=>res.json()).then(()=>{ alert("Обновлено"); loadBlocks(); });
+};
+
+const deleteBlock=(id)=>{
+  if(confirm("Удалить этот блок?")){
+     fetch(`/api/blocks/${id}/delete`,{method:'POST'})
+     .then(res=>res.json())
+     .then(()=>{ alert("Удалено"); loadBlocks(); });
+  }
+};
+
+// Инициализация при загрузке страницы
+window.onload=loadBlocks;
+</script>
+
+<h3>Список ссылок:</h3><div id='links-list'></div><br/>
+<h3>Список переходов:</h3><div id='transitions-list'></div>
+
+<style>
+/* Простые стили */
+body { font-family:Arial,sans-serif; padding:20px; }

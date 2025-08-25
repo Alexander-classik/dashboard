@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Красивый Дашборд</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+<h1>Дашборд</h1>
+<div class="chessboard">
+
+<!-- Виртуалки -->
+<section id="virtuals">
+<div class="collapsible-section animated-border">
+<h2 class="section-header">Виртуальные машины <span class="toggle-icon">▼</span></h2>
+<div class="section-content">
+<div class="cards">
+{% for vm_id, url in virtuals.items() %}
+<div class="card" ondblclick="launchVM('{{ vm_id }}')">
+<strong>{{ vm_id }}</strong><br/>
+{{ url }}
+</div>
+{% endfor %}
+</div>
+</div>
+</div>
+</section>
+
+<!-- Сайты -->
+<section id="sites">
+<div class="collapsible-section animated-border">
+<h2 class="section-header">Сайты <span class="toggle-icon">▼</span></h2>
+<div class="section-content">
+<ul class="icon-list" id="links-blocks">
+{% for block in blocks['links'] %}
+<li><a href="{{ block.url }}" target="_blank">
+{% if block.icon %}
+<img src="{{ url_for('static', filename='icons/' + block.icon) }}" style="width:24px; height:24px; margin-right:8px;">
+{% endif %}
+{{ block.name }}</a></li>
+{% endfor %}
+</ul>
+</div>
+</div>
+</section>
+
+<!-- Переходы -->
+<section id="transitions">
+<div class="collapsible-section animated-border">
+<h2 class="section-header">Переходы <span class="toggle-icon">▼</span></h2>
+<div class="section-content">
+<ul id="transitions-blocks">
+{% for block in blocks['transitions'] %}
+<li><a href="{{ block.url }}" target="_blank">{{ block.name }}</a></li>
+{% endfor %}
+</ul>
+</div>
+</div>
+</section>
+
+<!-- Остальные секции остаются без изменений -->
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+<script>
+// Можно добавить JS для динамической подгрузки или редактирования блоков через API
+// Например, при необходимости обновлять список без перезагрузки страницы.
+</script>
+
+</body>
+</html>
