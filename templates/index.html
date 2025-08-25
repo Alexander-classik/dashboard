@@ -5,11 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Красивый Дашборд</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+<script>
+function launchVM(vm_id) {
+    fetch('/launch_vm/' + encodeURIComponent(vm_id), {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(error => {
+        alert('Ошибка при запуске VM: ' + error);
+    });
+}
+</script>
 </head>
 <body>
 <h1>Дашборд</h1>
 <div class="chessboard">
-
 <!-- Виртуалки -->
 <section id="virtuals">
 <div class="collapsible-section animated-border">
@@ -18,8 +31,8 @@
 <div class="cards">
 {% for vm_id, url in virtuals.items() %}
 <div class="card" ondblclick="launchVM('{{ vm_id }}')">
-<strong>{{ vm_id }}</strong><br/>
-{{ url }}
+  <strong>{{ vm_id }}</strong><br/>
+  {{ url }}
 </div>
 {% endfor %}
 </div>
@@ -32,13 +45,9 @@
 <div class="collapsible-section animated-border">
 <h2 class="section-header">Сайты <span class="toggle-icon">▼</span></h2>
 <div class="section-content">
-<ul class="icon-list" id="links-blocks">
+<ul>
 {% for block in blocks['links'] %}
-<li><a href="{{ block.url }}" target="_blank">
-{% if block.icon %}
-<img src="{{ url_for('static', filename='icons/' + block.icon) }}" style="width:24px; height:24px; margin-right:8px;">
-{% endif %}
-{{ block.name }}</a></li>
+<li><a href="{{ block.url }}" target="_blank">{{ block.name }}</a></li>
 {% endfor %}
 </ul>
 </div>
@@ -48,9 +57,9 @@
 <!-- Переходы -->
 <section id="transitions">
 <div class="collapsible-section animated-border">
-<h2 class="section-header">Переходы <span class="toggle-icon">▼</span></h2>
-<div class="section-content">
-<ul id="transitions-blocks">
+<h2 class='section-header'>Переходы <span class='toggle-icon'>▼</span></h2>
+<div class='section-content'>
+<ul>
 {% for block in blocks['transitions'] %}
 <li><a href="{{ block.url }}" target="_blank">{{ block.name }}</a></li>
 {% endfor %}
@@ -59,14 +68,46 @@
 </div>
 </section>
 
-<!-- Остальные секции остаются без изменений -->
+<!-- Виджеты -->
+<section id="widgets">
+<div class="collapsible-section animated-border">
+<h2 class='section-header'>Виджеты <span class='toggle-icon'>▼</span></h2>
+<div class='section-content'>
+<div id='clock'></div>
+<div id='ip-address'></div>
+</div>
+</div>
+</section>
+
+<!-- Полезные кнопки -->
+<section id='utilities'>
+<div class='collapsible-section animated-border'>
+<h2 class='section-header'>Полезные кнопки <span class='toggle-icon'>▼</span></h2>
+<div class='section-content'>
+<button onclick='window.open("http://monitoring.example.com")'>Мониторинг</button>
+<button onclick='window.open("http://database.example.com")'>База данных</button>
+<button onclick='window.open("https://pos.gususlugi.ru/admin")'>ПОС Админка</button>
+<button onclick='window.open("https://webmail.tambov.gov.ru/postfixadmin")'>Почта</button>
+</div>
+</div>
+</section>
+
+<!-- Админка (пример) -->
+<section id='admin'>
+<div class='collapsible-section animated-border'>
+<h2 class='section-header'>Редактирование блоков (пример) <span class='toggle-icon'>▼</span></h2>
+<div class='section-content'>
+<p>Здесь можно реализовать интерфейс редактирования блоков.</p>
+<!-- Можно добавить формы для редактирования или добавления блоков -->
+</div>
+</div>
+</section>
+
+</div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-<script>
-// Можно добавить JS для динамической подгрузки или редактирования блоков через API
-// Например, при необходимости обновлять список без перезагрузки страницы.
-</script>
+<!-- Можно добавить сюда дополнительные скрипты, если нужно -->
 
 </body>
 </html>
