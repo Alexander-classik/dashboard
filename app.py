@@ -1,20 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, jsonify, request
+import requests
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blocks.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
-# Модель блока
-class Block(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    block_type = db.Column(db.String(50))  # 'links', 'transitions', etc.
-    name = db.Column(db.String(255))
-    url = db.Column(db.String(255))
-    icon = db.Column(db.String(255), nullable=True)  # для иконки
-
-# Виртуальные машины (остаются статическими)
+# Виртуальные машины (можно расширять)
 virtual_machines = {
     'sh0': 'https://10.25.1.18:8006',
     'sh1': 'https://10.25.1.32:8006',
@@ -22,63 +11,40 @@ virtual_machines = {
     'sh3': 'https://10.25.1.31:8006',
     'sh4': 'https://10.25.1.33:8006'
 }
-
-@app.before_first_request
-def create_tables():
-    db.create_all()
+@app.route('/admin.html')
+def admin():
+    return render_template('admin.html')
+# Блоки для админки (можно расширять)
+blocks = {
+    'links': [
+        {'name': 'Админка внутреннего сайта', 'url': 'https://is.city.tambov.gov.ru:8055'},
+        {'name': 'Админка внешнего сайта', 'url': 'https://city.tambov.gov.ru/typo3'},
+        {'name': 'Система тестирования', 'url': 'http://10.25.1.55'},
+        {'name': 'Система планирования', 'url': 'http://task.city.tambov.gov.ru'},
+        {'name': 'ПОС', 'url': 'https://pos.gususlugi.ru/admin'},
+        {'name': 'Почта', 'url': 'https://webmail.tambov.gov.ru/postfixadmin'}
+    ],
+    'transitions': [
+        {'name': 'На внутренний сайт', 'url': 'http://10.25.1.2'},
+        {'name': 'На внешний сайт', 'url': 'https://city.tambov.gov.ru'},
+        {'name': 'Телефонный справочник администрации города', 'url': 'http://app4.tambov.gov.ru/tmbphones'},
+        {'name': 'Телефонный справочник области', 'url': 'http://phones.tambov.gov.ru'}
+    ],
+    # Можно добавлять новые блоки через API или интерфейс
+}
 
 @app.route('/')
 def index():
-    # Загружаем блоки по типам
-    blocks_data = {}
-    for block_type in ['links', 'transitions']:
-        blocks_data[block_type] = Block.query.filter_by(block_type=block_type).all()
-    return render_template('index.html', virtuals=virtual_machines, blocks=blocks_data)
+    return render_template('index.html', virtuals=virtual_machines, blocks=blocks)
 
-# API для получения всех блоков (для AJAX)
-@app.route('/api/blocks/<block_type>')
-def get_blocks(block_type):
-    blocks_list = Block.query.filter_by(block_type=block_type).all()
-    return jsonify([{'id': b.id, 'name': b.name, 'url': b.url, 'icon': b.icon} for b in blocks_list])
-
-# API для добавления блока
-@app.route('/api/blocks/<block_type>/add', methods=['POST'])
-def add_block(block_type):
-    data = request.json
-    new_block = Block(
-        block_type=block_type,
-        name=data['name'],
-        url=data['url'],
-        icon=data.get('icon')
-    )
-    db.session.add(new_block)
-    db.session.commit()
-    return jsonify({'status':'success', 'id': new_block.id})
-
-# API для редактирования блока
-@app.route('/api/blocks/<int:block_id>/edit', methods=['POST'])
-def edit_block(block_id):
-    data = request.json
-    block = Block.query.get_or_404(block_id)
-    block.name = data['name']
-    block.url = data['url']
-    if 'icon' in data:
-        block.icon = data['icon']
-    db.session.commit()
-    return jsonify({'status':'success'})
-
-# API для удаления блока
-@app.route('/api/blocks/<int:block_id>/delete', methods=['POST'])
-def delete_block(block_id):
-    block = Block.query.get_or_404(block_id)
-    db.session.delete(block)
-    db.session.commit()
-    return jsonify({'status':'success'})
-
-# Страница админки
-@app.route('/admin')
-def admin():
-    return render_template('admin.html')
+@app.route('/launch_vm/<vm_id>', methods=['POST'])
+def launch_vm(vm_id):
+    if vm_id in virtual_machines:
+        # Тут должна быть логика запуска VM через API гипервизора
+        # Для примера просто возвращаем сообщение
+        return jsonify({'status':'success', 'message': f'Виртуальная машина {vm_id} запущена'})
+    else:
+        return jsonify({'status':'error', 'message':'Виртуальная машина не найдена'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
